@@ -1,0 +1,367 @@
+# /sprint_setup.yml
+issues:
+  # --- 3.1. Issue 0 – Setup of repos and skeletons ---
+  - repo: hexa-personal-service
+    title: "US-P0-Personal: Setup .NET solution and hexagonal structure by modules"
+    branch: "feature/personal-setup-structure"
+    labels:
+      - "type:story"
+      - "role:backend-dotnet-1"
+      - "priority:P0"
+    body: |
+      **As a backend team, I want a .NET solution with a hexagonal architecture and pre-created modules (Employees, Vacations, Notifications) to exist so that each developer can work on their module in parallel without blockages.**
+
+      ### Checklist:
+      - [ ] Create solution and projects: Hexalink.Personal.Api, Hexalink.Personal.Domain, Hexalink.Personal.Application, Hexalink.Personal.Infrastructure.
+      - [ ] Create the folder structure according to the `src/` tree defined in the project README.
+      - [ ] Configure `appsettings.json` with a base connection to SQL Server (using environment variables).
+      - [ ] Register `PersonalDbContext` in `Hexalink.Personal.Infrastructure` and reference it from `Hexalink.Personal.Api`.
+      - [ ] Add a simple health-check endpoint (`/health`) to test the service.
+      - [ ] Document in the repo's README how to run the microservice locally.
+
+  - repo: hexa-recruiting-service
+    title: "US-P0-Recruiting: Setup Spring Boot and hexagonal structure by modules"
+    branch: "feature/recruiting-setup-structure"
+    labels:
+      - "type:story"
+      - "role:backend-java"
+      - "priority:P0"
+    body: |
+      **As a backend team, I want a Spring Boot project with a hexagonal architecture and pre-created modules (vacancies, candidates) to exist so that the Java developer can work without blockages.**
+
+      ### Checklist:
+      - [ ] Create a Spring Boot project with the base package `com.hexalink.recruiting`.
+      - [ ] Create the package structure according to the `src/main/java/com/hexalink/recruiting/` tree defined in the project README.
+      - [ ] Configure `application.yml` with a connection to PostgreSQL (dev profile).
+      - [ ] Add an `/actuator/health` endpoint or similar and test that it starts up.
+      - [ ] Document in the repo's README the Maven/Gradle commands to run the service.
+
+  - repo: hexa-frontend
+    title: "US-P0-Frontend: Setup Next.js project and base layout"
+    branch: "feature/frontend-setup-layout"
+    labels:
+      - "type:story"
+      - "role:frontend"
+      - "priority:P0"
+    body: |
+      **As a frontend team, I want a Next.js project with a basic structure and layout to exist so that I can start developing pages and components without delay.**
+
+      ### Checklist:
+      - [ ] Create a Next.js project with TypeScript.
+      - [ ] Create the `src/app` (or `pages`) and `components`, `services` folder structure.
+      - [ ] Configure `.env.local` with the microservices' URLs (`PERSONAL_API_URL`, `RECRUITING_API_URL`).
+      - [ ] Implement a base layout and a simple home page.
+      - [ ] Test a trial call (mock or `/health` endpoint) to one of the backends.
+
+  - repo: hexalink-data
+    title: "US-P0-Data: Setup data repo, ERD, and SQL scripts"
+    branch: "feature/data-setup-structure"
+    labels:
+      - "type:story"
+      - "role:data-analyst"
+      - "priority:P0"
+    body: |
+      **As a data team, I want a dedicated repository with a clear folder structure for documentation, ERDs, and SQL scripts to centralize data-related assets.**
+
+      ### Checklist:
+      - [ ] Create folders: `docs/`, `sql/sqlserver/`, `sql/postgres/`, `samples/`.
+      - [ ] Create an internal `README.md` explaining the use of the repo for ERDs and migrations.
+      - [ ] Connect with the backend devs to align on initial table and column names.
+
+  # --- 3.2. Dev .NET 1 – Employees Module (Full Vertical) ---
+  - repo: hexa-personal-service
+    title: "US-P1-Employees: Employee Domain"
+    branch: "feature/personal-employees-domain"
+    labels:
+      - "type:story"
+      - "role:backend-dotnet-1"
+      - "area:employees"
+      - "priority:P1"
+    body: |
+      **As an HR administrator, I want the system to have a robust employee model so that I can store and access employee information in a consistent manner.**
+
+      ### Checklist:
+      - [ ] Define `Employee`, `EmployeeId`, `EmployeeEmail` in `Hexalink.Personal.Domain/Modules/Employees/Model`.
+      - [ ] Create `Ports/In` (`ICreateEmployeeUseCase`, `IGetEmployeesUseCase`) and `Ports/Out` (`IEmployeeRepository`).
+      - [ ] Add basic domain exceptions (e.g., invalid email, empty name).
+
+  - repo: hexa-personal-service
+    title: "US-P2-Employees: UseCases and DTOs"
+    branch: "feature/personal-employees-usecases"
+    labels:
+      - "type:story"
+      - "role:backend-dotnet-1"
+      - "area:employees"
+      - "priority:P2"
+    body: |
+      **As an HR analyst, I want to be able to register and list employees through clear use cases to separate business logic from the HTTP exposure.**
+
+      ### Checklist:
+      - [ ] Implement `CreateEmployeeUseCase` and `GetEmployeesUseCase` in `Application/Modules/Employees/UseCases`.
+      - [ ] Create DTOs `CreateEmployeeRequest` and `EmployeeResponse`.
+      - [ ] Map between DTOs and domain models.
+
+  - repo: hexa-personal-service
+    title: "US-P3-Employees: Infrastructure and API"
+    branch: "feature/personal-employees-api"
+    labels:
+      - "type:story"
+      - "role:backend-dotnet-1"
+      - "area:employees"
+      - "priority:P3"
+    body: |
+      **As a system user, I want to create and query employees via REST endpoints to manage personnel from the web interface.**
+
+      ### Checklist:
+      - [ ] Create `EmployeeEntity` and `EmployeeRepository` in `Infrastructure/Persistence/Employees/`.
+      - [ ] Implement `EmployeesController` with endpoints `POST /employees` and `GET /employees`.
+      - [ ] Configure AutoMapper or necessary manual mappings.
+      - [ ] Add basic unit and integration tests (happy path).
+
+  # --- 3.3. Dev .NET 2 – Vacations Module ---
+  - repo: hexa-personal-service
+    title: "US-P1-Vacations: VacationRequest Domain"
+    branch: "feature/personal-vacations-domain"
+    labels:
+      - "type:story"
+      - "role:backend-dotnet-2"
+      - "area:vacations"
+      - "priority:P1"
+    body: |
+      **As an employee, I want my vacation requests to be represented as their own entity so I can track their status.**
+
+      ### Checklist:
+      - [ ] Define `VacationRequest`, `VacationRequestId`, `VacationStatus` in `Domain/Modules/Vacations/Model`.
+      - [ ] Create `Ports/In`: `ICreateVacationRequestUseCase`, `IApproveVacationUseCase`, etc.
+      - [ ] Create `Ports/Out`: `IVacationRequestRepository`.
+      - [ ] Define domain exceptions (invalid date range, non-existent employee, etc.).
+
+  - repo: hexa-personal-service
+    title: "US-P2-Vacations: UseCases and DTOs"
+    branch: "feature/personal-vacations-usecases"
+    labels:
+      - "type:story"
+      - "role:backend-dotnet-2"
+      - "area:vacations"
+      - "priority:P2"
+    body: |
+      **As an employee, I want to create vacation requests through a use case to start the approval process.**
+
+      ### Checklist:
+      - [ ] Implement `CreateVacationRequestUseCase` and `ApproveVacationUseCase` (and/or Reject).
+      - [ ] Create DTOs `CreateVacationRequest`, `VacationRequestResponse`.
+      - [ ] Validate business rules: dates, valid statuses, relationship with employee.
+
+  - repo: hexa-personal-service
+    title: "US-P3-Vacations: Infrastructure and API"
+    branch: "feature/personal-vacations-api"
+    labels:
+      - "type:story"
+      - "role:backend-dotnet-2"
+      - "area:vacations"
+      - "priority:P3"
+    body: |
+      **As a manager, I want to approve or reject vacation requests from REST endpoints to control team availability.**
+
+      ### Checklist:
+      - [ ] Create `VacationRequestEntity` and `VacationRequestRepository`.
+      - [ ] Implement `VacationRequestsController` with `POST /vacation-requests`, `POST /vacation-requests/{id}/approve`, and `POST /vacation-requests/{id}/reject`.
+      - [ ] Add unit and integration tests.
+
+  # --- 3.4. Dev .NET 3 – Notifications Module ---
+  - repo: hexa-personal-service
+    title: "US-P1-Notifications: Notification Domain"
+    branch: "feature/personal-notifications-domain"
+    labels:
+      - "type:story"
+      - "role:backend-dotnet-3"
+      - "area:notifications"
+      - "priority:P1"
+    body: |
+      **As a manager, I want an internal notification model to exist to record important events in the vacation flow.**
+
+      ### Checklist:
+      - [ ] Define `Notification` and necessary value objects (`NotificationId`, `NotificationType`, etc.).
+      - [ ] Create IN/OUT ports for notifications.
+      - [ ] Define related domain exceptions.
+
+  - repo: hexa-personal-service
+    title: "US-P2-Notifications: Infrastructure and base API"
+    branch: "feature/personal-notifications-api"
+    labels:
+      - "type:story"
+      - "role:backend-dotnet-3"
+      - "area:notifications"
+      - "priority:P2"
+    body: |
+      **As a manager, I want to be able to consult my notifications to know what important events have occurred.**
+
+      ### Checklist:
+      - [ ] Create `NotificationEntity` and `NotificationRepository` in `Infrastructure/Persistence/Notifications`.
+      - [ ] Implement `NotificationsController` with `GET /notifications` (per user).
+      - [ ] Add basic tests.
+
+  - repo: hexa-personal-service
+    title: "US-P3-Notifications: Integration with Vacations"
+    branch: "feature/personal-notifications-on-vacations"
+    labels:
+      - "type:story"
+      - "role:backend-dotnet-3"
+      - "area:notifications"
+      - "priority:P3"
+    body: |
+      **As a manager, I want the system to automatically generate notifications when vacation requests change so I am informed without having to check everything manually.**
+
+      ### Checklist:
+      - [ ] Define domain events or a trigger mechanism when creating/approving/rejecting a `VacationRequest`.
+      - [ ] Implement a listener/handler that creates the corresponding `Notification`.
+      - [ ] Test with unit tests using repository mocks.
+
+  # --- 3.5. Java Dev – Recruiting ---
+  - repo: hexa-recruiting-service
+    title: "US-P1-Recruiting: Vacancies domain + use cases"
+    branch: "feature/recruiting-vacancies-domain-usecases"
+    labels:
+      - "type:story"
+      - "role:backend-java"
+      - "area:recruiting"
+      - "priority:P1"
+    body: |
+      **As a recruiter, I want to create and view job vacancies to manage active selection processes.**
+
+      ### Checklist:
+      - [ ] Define `Vacancy` in `vacancies/domain/model`.
+      - [ ] Define ports IN (`CreateVacancyUseCase`, `ListVacanciesUseCase`) and OUT (`VacancyRepositoryPort`).
+      - [ ] Implement `CreateVacancyService` and `ListVacanciesService` in `vacancies/application/usecases`.
+      - [ ] Create DTOs `CreateVacancyRequest` and `VacancyResponse`.
+
+  - repo: hexa-recruiting-service
+    title: "US-P2-Recruiting: Infrastructure Vacancies"
+    branch: "feature/recruiting-vacancies-infra-api"
+    labels:
+      - "type:story"
+      - "role:backend-java"
+      - "area:recruiting"
+      - "priority:P2"
+    body: |
+      **As a backend developer, I want to expose the vacancies functionality through a REST API so that the frontend can consume it.**
+
+      ### Checklist:
+      - [ ] Create `VacancyEntity`, `JpaVacancyRepository`, and `VacancyRepositoryAdapter`.
+      - [ ] Implement `VacancyController` with `POST /vacancies` and `GET /vacancies`.
+      - [ ] Test endpoints with basic integration tests.
+
+  - repo: hexa-recruiting-service
+    title: "US-P3-Recruiting: Candidates + internal search"
+    branch: "feature/recruiting-candidates-and-internal-search"
+    labels:
+      - "type:story"
+      - "role:backend-java"
+      - "area:recruiting"
+      - "priority:P3"
+    body: |
+      **As an internal recruiter, I want to register candidates and search for internal employees to fill vacancies and leverage internal talent.**
+
+      ### Checklist:
+      - [ ] Define the `Candidate` domain and its ports.
+      - [ ] Implement the endpoint `POST /candidates`.
+      - [ ] Create an HTTP client to consume `GET /employees` from the .NET microservice.
+      - [ ] Implement endpoint `GET /recruiting/internal-search` that combines vacancies with internal employees.
+
+  # --- 3.6. Frontend – Next.js ---
+  - repo: hexa-frontend
+    title: "US-F1: Page /vacancies"
+    branch: "feature/frontend-vacancies-page"
+    labels:
+      - "type:story"
+      - "role:frontend"
+      - "area:frontend"
+      - "priority:P1"
+    body: |
+      **As a recruiter, I want to view existing vacancies and create new ones from the website to manage the selection process from the frontend.**
+
+      ### Checklist:
+      - [ ] Create the `/vacancies` page that consumes `GET /vacancies` from the Java Backend.
+      - [ ] Implement the form for `POST /vacancies`.
+      - [ ] Handle loading states and errors.
+
+  - repo: hexa-frontend
+    title: "US-F2: Page /employees"
+    branch: "feature/frontend-employees-page"
+    labels:
+      - "type:story"
+      - "role:frontend"
+      - "area:frontend"
+      - "priority:P2"
+    body: |
+      **As an HR analyst, I want to list and register employees from the interface to maintain the catalog without external tools.**
+
+      ### Checklist:
+      - [ ] Create the `/employees` page that consumes `GET /employees`.
+      - [ ] Implement the form for `POST /employees`.
+      - [ ] Display success/error messages.
+
+  - repo: hexa-frontend
+    title: "US-F3: Panel /manager"
+    branch: "feature/frontend-manager-panel"
+    labels:
+      - "type:story"
+      - "role:frontend"
+      - "area:frontend"
+      - "priority:P3"
+    body: |
+      **As a manager, I want to see vacation requests and notifications on a dashboard so I can make quick decisions.**
+
+      ### Checklist:
+      - [ ] Create a `/manager` page that lists `VacationRequests`.
+      - [ ] Integrate approve/reject buttons that call the Vacations endpoints.
+      - [ ] Show a list of Notifications with an unread indicator.
+
+  # --- 3.7. Data Analyst ---
+  - repo: hexalink-data
+    title: "US-D1: Global ERD"
+    branch: "feature/data-erd-global"
+    labels:
+      - "type:story"
+      - "role:data-analyst"
+      - "area:data"
+      - "priority:P1"
+    body: |
+      **As a data architect, I want a consistent data model between Recruiting and Human Resources to ensure the integrity and scalability of the platform.**
+
+      ### Checklist:
+      - [ ] Model entities: Employees, VacationRequests, Notifications, Vacancies, Candidates.
+      - [ ] Create an ERD in a visual tool and export it to `docs/erd-global.png`.
+      - [ ] Document relationships and keys in `docs/erd-global.md`.
+
+  - repo: hexalink-data
+    title: "US-D2: SQL Server Scripts (Personal)"
+    branch: "feature/data-sqlserver-scripts"
+    labels:
+      - "type:story"
+      - "role:data-analyst"
+      - "area:data"
+      - "priority:P2"
+    body: |
+      **As a data analyst, I need to create the initial database schema for the Personal microservice.**
+
+      ### Checklist:
+      - [ ] Generate scripts for the Personal tables in `sql/sqlserver/`.
+      - [ ] Validate data types and constraints.
+      - [ ] Test scripts in a test SQL Server instance.
+
+  - repo: hexalink-data
+    title: "US-D3: PostgreSQL Scripts (Recruiting) + Seeds"
+    branch: "feature/data-postgres-scripts"
+    labels:
+      - "type:story"
+      - "role:data-analyst"
+      - "area:data"
+      - "priority:P3"
+    body: |
+      **As a data analyst, I need to create the initial database schema for the Recruiting microservice and provide sample data.**
+
+      ### Checklist:
+      - [ ] Generate scripts for Vacancies and Candidates in `sql/postgres/`.
+      - [ ] Create sample data seed scripts in `samples/`.
+      - [ ] Document basic KPI queries (e.g., active employees, open vacancies, pending requests).
