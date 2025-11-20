@@ -34,5 +34,5 @@ jobs:
         env:
           # GITHUB_TOKEN is provided automatically by GitHub Actions.
           # It has permissions to act on behalf of the user who triggers the action.
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.WORKFLOW_PAT }}
         run: python scripts/create_issues.py ${{ github.event.inputs.sprint_file }}
