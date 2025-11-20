@@ -1,92 +1,90 @@
-# Descriptive name of the workflow
+# Descriptive workflow name
 name: "Bulk: Setup Sprint (Branch + Milestone)"
 
 # Trigger: Manual (workflow_dispatch)
 on:
-    workflow_dispatch:
-        # Parameters that will be requested from the user
-        inputs:
-            repo_list:
-                description: 'Comma-separated list of repos (e.g., Hexa-Link/repo1,Hexa-Link/repo2)'
-                required: true
-                default: 'Hexa-Link/staffinity-data,Hexa-Link/staffinity-frontend,Hexa-Link/staffinity-recruiting-service,Hexa-Link/staffinity-personal-service'
-            
-            milestone_title:
-                description: 'The title for the new sprint milestone'
-                required: true
-                default: 'Sprint 1 - MVP (2025-11-20 to 2025-11-27)'
-                
-            due_date:
-                description: 'Milestone due date in YYYY-MM-DD format'
-                required: true
-                default: '2025-11-27'
+  workflow_dispatch:
+    # Parameters that will be requested from the user
+    inputs:
+      repo_list:
+        description: 'Comma-separated list of repos (e.g., Hexa-Link/repo1,Hexa-Link/repo2)'
+        required: true
+        default: 'Hexa-Link/staffinity-data,Hexa-Link/staffinity-frontend,Hexa-Link/staffinity-recruiting-service,Hexa-Link/staffinity-personal-service'
+      milestone_title:
+        description: 'The title for the new sprint milestone'
+        required: true
+        default: 'Sprint 1 - MVP (2025-11-20 to 2025-11-27)'
+      due_date:
+        description: 'Milestone due date in YYYY-MM-DD format'
+        required: true
+        default: '2025-11-27'
 
 jobs:
-    setup-repository-for-sprint:
-        runs-on: ubuntu-latest
-        
-        # We use a "strategy matrix" to run this job once for each repo.
-        strategy:
-            matrix:
-                # Converts the comma-separated list into an array for the matrix
-                repo: ${{ split(inputs.repo_list, ',') }}
-            # Prevents a failure in one repo from stopping the others
-            fail-fast: false
-
-        steps:
-            # =================================================================
-            # STEP 1: Create the 'develop' branch
-            # =================================================================
-            - name: "Checkout repository ${{ matrix.repo }}"
-                uses: actions/checkout@v4
-                with:
-                    repository: ${{ matrix.repo }}
-                    token: ${{ secrets.WORKFLOW_PAT }}
-
-            - name: "Step 1: Create 'develop' branch in ${{ matrix.repo }}"
-                run: |
-                    if git show-ref --verify --quiet refs/heads/develop; then
-                        echo "Branch 'develop' already exists in ${{ matrix.repo }}. Skipping."
-                    else
-                        git config --global user.name 'GitHub Actions Bot'
-                        git config --global user.email 'actions@github.com'
-                        git checkout -b develop
-                        git push origin develop
-                        echo "✅ Successfully created and pushed the 'develop' branch in ${{ matrix.repo }}."
-                    fi
-
-            # =================================================================
-            # STEP 2: Create the Milestone
-            # =================================================================
-            - name: "Step 2: Create Sprint Milestone in ${{ matrix.repo }}"
-                env:
-                    GITHUB_TOKEN: ${{ secrets.WORKFLOW_PAT }}
-                    REPO_FULL_PATH: ${{ matrix.repo }}
-                    MILESTONE_TITLE: ${{ inputs.milestone_title }}
-                    DUE_DATE_ISO: ${{ inputs.due_date }}T23:59:59Z # ISO 8601 format required by the API
-                run: |
-                    echo "Creating milestone '${MILESTONE_TITLE}' in ${REPO_FULL_PATH}..."
-                    
-                    # Make a call to the GitHub API to create the milestone
-                    response=$(curl --request POST \
-                    --url "https://api.github.com/repos/${REPO_FULL_PATH}/milestones" \
-                    --header "Authorization: Bearer ${GITHUB_TOKEN}" \
-                    --header "Content-Type: application/json" \
-                    --data @- <<EOF
-                    {
-                        "title": "${MILESTONE_TITLE}",
-                        "due_on": "${DUE_DATE_ISO}"
-                    }
-                    EOF
-                    )
-                    
-                    # Check if the API returned an error (e.g., milestone already exists)
-                    if echo "${response}" | grep -q "A milestone with this title already exists"; then
-                        echo "Milestone '${MILESTONE_TITLE}' already exists. Skipping."
-                    elif echo "${response}" | grep -q '"id":'; then
-                        echo "✅ Successfully created milestone '${MILESTONE_TITLE}'."
-                    else
-                        echo "❌ Error creating milestone. API Response:"
-                        echo "${response}"
-                        # exit 1 # Optional: uncomment if you want the job to fail on error
-                    fi
+  setup-repository-for-sprint:
+    runs-on: ubuntu-latest
+    
+    # Use a "strategy matrix" to execute this job once per repo
+    strategy:
+      matrix:
+        # Convert comma-separated list into an array for the matrix
+        repo: ${{ fromJSON(format('["{0}"]', join(split(inputs.repo_list, ','), '","'))) }}
+      # Prevent a failure in one repo from stopping the others
+      fail-fast: false
+    
+    steps:
+      # =================================================================
+      # STEP 1: Create the 'develop' branch
+      # =================================================================
+      - name: "Checkout repository ${{ matrix.repo }}"
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.repo }}
+          token: ${{ secrets.WORKFLOW_PAT }}
+      
+      - name: "Step 1: Create 'develop' branch in ${{ matrix.repo }}"
+        run: |
+          if git show-ref --verify --quiet refs/heads/develop; then
+            echo "Branch 'develop' already exists in ${{ matrix.repo }}. Skipping."
+          else
+            git config --global user.name 'GitHub Actions Bot'
+            git config --global user.email 'actions@github.com'
+            git checkout -b develop
+            git push origin develop
+            echo "✅ Successfully created and pushed the 'develop' branch in ${{ matrix.repo }}."
+          fi
+      
+      # =================================================================
+      # STEP 2: Create the Milestone
+      # =================================================================
+      - name: "Step 2: Create Sprint Milestone in ${{ matrix.repo }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.WORKFLOW_PAT }}
+          REPO_FULL_PATH: ${{ matrix.repo }}
+          MILESTONE_TITLE: ${{ inputs.milestone_title }}
+          DUE_DATE_ISO: ${{ inputs.due_date }}T23:59:59Z
+        run: |
+          echo "Creating milestone '${MILESTONE_TITLE}' in ${REPO_FULL_PATH}..."
+          
+          # Make a call to the GitHub API to create the milestone
+          response=$(curl --request POST \
+            --url "https://api.github.com/repos/${REPO_FULL_PATH}/milestones" \
+            --header "Authorization: Bearer ${GITHUB_TOKEN}" \
+            --header "Content-Type: application/json" \
+            --data @- <<EOF
+          {
+            "title": "${MILESTONE_TITLE}",
+            "state": "open",
+            "description": "Sprint milestone created automatically via GitHub Actions",
+            "due_on": "${DUE_DATE_ISO}"
+          }
+          EOF
+          )
+          
+          # Verify if creation was successful
+          if echo "$response" | grep -q '"number"'; then
+            echo "✅ Milestone '${MILESTONE_TITLE}' created successfully in ${REPO_FULL_PATH}."
+          else
+            echo "⚠️ Failed to create milestone. Response:"
+            echo "$response"
+            exit 1
+          fi
