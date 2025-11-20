@@ -20,14 +20,28 @@ on:
         default: '2025-11-27'
 
 jobs:
+  prepare-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      repos: ${{ steps.set-matrix.outputs.repos }}
+    steps:
+      - name: Prepare repository matrix
+        id: set-matrix
+        run: |
+          # Convert comma-separated list to JSON array
+          REPOS='${{ inputs.repo_list }}'
+          JSON_ARRAY=$(echo "$REPOS" | jq -R -s -c 'split(",") | map(select(length > 0) | gsub("^\\s+|\\s+$";""))')
+          echo "repos=$JSON_ARRAY" >> $GITHUB_OUTPUT
+          echo "Generated matrix: $JSON_ARRAY"
+
   setup-repository-for-sprint:
+    needs: prepare-matrix
     runs-on: ubuntu-latest
     
     # Use a "strategy matrix" to execute this job once per repo
     strategy:
       matrix:
-        # Convert comma-separated list into an array for the matrix
-        repo: ${{ fromJSON(format('["{0}"]', join(split(inputs.repo_list, ','), '","'))) }}
+        repo: ${{ fromJSON(needs.prepare-matrix.outputs.repos) }}
       # Prevent a failure in one repo from stopping the others
       fail-fast: false
     
