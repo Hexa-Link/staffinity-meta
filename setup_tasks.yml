@@ -1,55 +1,63 @@
-# List of setup tasks to create as issues in staffinity-meta
+# Lista de tareas de configuración para crear como issues en staffinity-meta
 tasks:
-    - title: "[SETUP] Configure Branch Protection Rules for the 'develop' Branch"
-        body: |
-            Apply branch protection rules in **all code repositories** (`personal-service`, `recruiting-service`, `frontend`, `data`).
+  - title: "[SETUP] Configurar Reglas de Protección para la rama 'develop'"
+    body: |
+      Aplicar reglas de protección de ramas en **todos los repositorios de código** para garantizar la calidad y el proceso.
+      ### Checklist de Reglas
+      - [ ] Requerir un Pull Request antes de fusionar.
+      - [ ] Requerir al menos **2** aprobaciónes. 1 owner y 1 miembro del equipo.
+      - [ ] Requerir que los "status checks" pasen antes de fusionar.
+    labels:
+      - "scope:setup"
+      - "priority:P0"
+    assignees:
+      - "TonyS-dev" 
 
-            ### Rules Checklist
-            - [ ] Require a Pull Request before merging.
-            - [ ] Require at least **1** approval.
-            - [ ] Require "status checks" to pass before merging (will be activated with CI/CD).
-        labels:
-            - "scope:setup"
-            - "priority:P0"
-        assignees:
-            - "TonyS-dev" 
+  - title: "[SETUP] Crear esqueletos de CI/CD para los repositorios de servicio"
+    body: |
+      Crear un archivo `.github/workflows/ci.yml` en cada repositorio de servicio para automatizar la compilación y las pruebas.
+      ### Checklist por Repositorio
+      - [ ] `staffinity-personal-service` (dotnet build, dotnet test)
+      - [ ] `staffinity-recruiting-service` (mvn package, mvn test)
+      - [ ] `staffinity-frontend` (npm run build, npm test)
+    labels:
+      - "scope:setup"
+    assignees:
+      - "TonyS-dev"
 
-    - title: "[SETUP] Create CI/CD Skeletons for Service Repositories"
-        body: |
-            Create a `.github/workflows/ci.yml` file in each service repository.
+  - title: "[SETUP] Configurar GitHub Secrets para entornos de desarrollo"
+    body: |
+      Crear los placeholders para los secretos en la configuración de cada repositorio para evitar commitear información sensible.
+      ### Checklist de Secretos
+      - [ ] `staffinity-personal-service`: `CONNECTION_STRING_DEV`.
+      - [ ] `staffinity-recruiting-service`: `DB_URL_DEV`, `DB_USER_DEV`, `DB_PASSWORD_DEV`.
+      - [ ] Todos los servicios: `JWT_SECRET_KEY_DEV`.
+    labels:
+      - "scope:setup"
+    assignees:
+      - "TonyS-dev"
 
-            ### Checklist per Repository
-            - [ ] `staffinity-personal-service` (dotnet build, dotnet test)
-            - [ ] `staffinity-recruiting-service` (mvn package, mvn test)
-            - [ ] `staffinity-frontend` (npm run build, npm test)
-        labels:
-            - "scope:setup"
-        assignees:
-            - "TonyS-dev" 
+  - title: "[SETUP] Crear plantillas de Pull Request e Issues"
+    body: |
+      Crear plantillas en el repositorio `.github` o `staffinity-meta` para estandarizar las contribuciones.
+      ### Archivos a Crear
+      - [ ] `.github/PULL_REQUEST_TEMPLATE.md`
+      - [ ] `.github/ISSUE_TEMPLATE/bug_report.md`
+      - [ ] `.github/ISSUE_TEMPLATE/feature_request.md`
+    labels:
+      - "scope:setup"
+    assignees:
+      - "TonyS-dev"
 
-    - title: "[SETUP] Create Pull Request and Issue Templates"
-        body: |
-            Create templates in the `.github` repository to standardize contributions.
-
-            ### Files to Create
-            - [ ] `.github/PULL_REQUEST_TEMPLATE.md`
-            - [ ] `.github/ISSUE_TEMPLATE/bug_report.md`
-            - [ ] `.github/ISSUE_TEMPLATE/feature_request.md`
-        labels:
-            - "scope:setup"
-        assignees:
-            - "TonyS-dev" 
-
-    - title: "[SETUP] Enable Dependabot in All Repositories"
-        body: |
-            Activate Dependabot security alerts and updates to keep dependencies secure.
-
-            ### Repository Checklist
-            - [ ] `staffinity-personal-service`
-            - [ ] `staffinity-recruiting-service`
-            - [ ] `staffinity-frontend`
-            - [ ] `staffinity-data`
-        labels:
-            - "scope:setup"
-        assignees:
-            - "TonyS-dev" 
+  - title: "[SETUP] Habilitar Dependabot en todos los repositorios"
+    body: |
+      Activar las alertas y actualizaciones de seguridad de Dependabot para mantener las dependencias seguras.
+      ### Checklist de Repositorios
+      - [ ] `staffinity-personal-service`
+      - [ ] `staffinity-recruiting-service`
+      - [ ] `staffinity-frontend`
+      - [ ] `staffinity-data`
+    labels:
+      - "scope:setup"
+    assignees:
+      - "TonyS-dev"
