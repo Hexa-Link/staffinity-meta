@@ -1,0 +1,55 @@
+# List of setup tasks to create as issues in staffinity-meta
+tasks:
+    - title: "[SETUP] Configure Branch Protection Rules for the 'develop' Branch"
+        body: |
+            Apply branch protection rules in **all code repositories** (`personal-service`, `recruiting-service`, `frontend`, `data`).
+
+            ### Rules Checklist
+            - [ ] Require a Pull Request before merging.
+            - [ ] Require at least **1** approval.
+            - [ ] Require "status checks" to pass before merging (will be activated with CI/CD).
+        labels:
+            - "scope:setup"
+            - "priority:P0"
+        assignees:
+            - "TonyS-dev" 
+
+    - title: "[SETUP] Create CI/CD Skeletons for Service Repositories"
+        body: |
+            Create a `.github/workflows/ci.yml` file in each service repository.
+
+            ### Checklist per Repository
+            - [ ] `staffinity-personal-service` (dotnet build, dotnet test)
+            - [ ] `staffinity-recruiting-service` (mvn package, mvn test)
+            - [ ] `staffinity-frontend` (npm run build, npm test)
+        labels:
+            - "scope:setup"
+        assignees:
+            - "TonyS-dev" 
+
+    - title: "[SETUP] Create Pull Request and Issue Templates"
+        body: |
+            Create templates in the `.github` repository to standardize contributions.
+
+            ### Files to Create
+            - [ ] `.github/PULL_REQUEST_TEMPLATE.md`
+            - [ ] `.github/ISSUE_TEMPLATE/bug_report.md`
+            - [ ] `.github/ISSUE_TEMPLATE/feature_request.md`
+        labels:
+            - "scope:setup"
+        assignees:
+            - "TonyS-dev" 
+
+    - title: "[SETUP] Enable Dependabot in All Repositories"
+        body: |
+            Activate Dependabot security alerts and updates to keep dependencies secure.
+
+            ### Repository Checklist
+            - [ ] `staffinity-personal-service`
+            - [ ] `staffinity-recruiting-service`
+            - [ ] `staffinity-frontend`
+            - [ ] `staffinity-data`
+        labels:
+            - "scope:setup"
+        assignees:
+            - "TonyS-dev" 
