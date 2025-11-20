@@ -22,4 +22,4 @@ jobs:
         env:
           # We use a Personal Access Token to have the necessary permissions
           GITHUB_TOKEN: ${{ secrets.WORKFLOW_PAT }}
-        run: python scripts/create_issues.py setup_tasks.yml
+        run: python scripts/create_issue_tasks.py setup_tasks.yml
