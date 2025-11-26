@@ -24,6 +24,7 @@ resource "github_branch_protection" "develop_branch_rules" {
   repository_id = each.key
   pattern    = "develop"
 
+  enforce_admins = true
 
   required_pull_request_reviews {
     required_approving_review_count = 2
@@ -45,6 +46,8 @@ resource "github_branch_protection" "main_branch_rules" {
 
   repository_id = each.key
   pattern    = "main"
+
+  enforce_admins = true
 
   allows_force_pushes = false
   allows_deletions    = false
