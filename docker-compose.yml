@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # --- Databases ---
+  postgres:
+    image: postgres:15-alpine
+    container_name: hexalink-postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=postgres # Default DB, others created by script
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/postgres/init-multiple-dbs.sh:/docker-entrypoint-initdb.d/init-multiple-dbs.sh
+    networks:
+      - hexalink-net
+    restart: always
+
+  # --- Backends ---
+  personal-service:
+    image: ghcr.io/hexa-link/staffinity-personal-service:latest
+    container_name: hexalink-personal
+    environment:
+      # Updated to PostgreSQL Connection String
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=personal_db;Username=postgres;Password=${POSTGRES_PASSWORD};
+      - ASPNETCORE_ENVIRONMENT=Production
+    depends_on:
+      - postgres
+    networks:
+      - hexalink-net
+    restart: always
+
+  recruiting-service:
+    image: ghcr.io/hexa-link/staffinity-recruiting-service:latest
+    container_name: hexalink-recruiting
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/recruiting_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - APP_PERSONAL_SERVICE_URL=http://personal-service:8080
+    depends_on:
+      - postgres
+      - personal-service # For internal search
+    networks:
+      - hexalink-net
+    restart: always
+
+  # --- Frontend ---
+  frontend:
+    image: ghcr.io/hexa-link/staffinity-frontend:latest
+    container_name: hexalink-frontend
+    environment:
+      # Browser-side vars must be prefixed with NEXT_PUBLIC_ if strictly client-side,
+      # but for SSR/API routes in container:
+      - PERSONAL_API_URL=http://personal-service:8080
+      - RECRUITING_API_URL=http://recruiting-service:8080
+    ports:
+      - "80:3000"
+    depends_on:
+      - personal-service
+      - recruiting-service
+    networks:
+      - hexalink-net
+    restart: always
+
+networks:
+  hexalink-net:
+    driver: bridge
+
+volumes:
+  postgres_data:

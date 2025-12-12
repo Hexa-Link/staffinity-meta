@@ -15,3 +15,13 @@ variable "target_repositories" {
     "staffinity-data"
   ]
 }
+
+variable "do_token" {
+  description = "DigitalOcean API Token"
+  sensitive   = true
+}
+
+variable "ssh_public_key" {
+  description = "The Public SSH Key to add to the Droplet for access"
+  type        = string
+}

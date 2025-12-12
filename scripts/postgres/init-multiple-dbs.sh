@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+	CREATE DATABASE personal_db;
+	CREATE DATABASE recruiting_db;
+	GRANT ALL PRIVILEGES ON DATABASE personal_db TO "$POSTGRES_USER";
+	GRANT ALL PRIVILEGES ON DATABASE recruiting_db TO "$POSTGRES_USER";
+EOSQL
