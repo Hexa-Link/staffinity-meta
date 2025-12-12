@@ -4,9 +4,17 @@ terraform {
   required_providers {
     github = {
       source  = "integrations/github"
-      version = "~> 6.0" # Updated to a more recent version
+      version = "~> 6.0"
+    }
+    digitalocean = {
+      source  = "digitalocean/digitalocean"
+      version = "~> 2.0"
     }
   }
+}
+
+provider "digitalocean" {
+  token = var.do_token
 }
 
 # Configure the provider to use your organization and the personal access token (PAT)

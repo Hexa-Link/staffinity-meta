@@ -15,3 +15,8 @@ variable "target_repositories" {
     "staffinity-data"
   ]
 }
+
+variable "do_token" {
+  description = "DigitalOcean API Token"
+  sensitive   = true
+}
