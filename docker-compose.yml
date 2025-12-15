@@ -28,6 +28,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
     depends_on:
       - postgres
+    ports:
+      - "8081:8080"
     networks:
       - hexalink-net
     restart: always
@@ -43,6 +45,8 @@ services:
     depends_on:
       - postgres
       - personal-service # For internal search
+    ports:
+      - "8082:8080"
     networks:
       - hexalink-net
     restart: always
@@ -54,8 +58,8 @@ services:
     environment:
       # Browser-side vars must be prefixed with NEXT_PUBLIC_ if strictly client-side,
       # but for SSR/API routes in container:
-      - PERSONAL_API_URL=http://personal-service:8080
-      - RECRUITING_API_URL=http://recruiting-service:8080
+      - NEXT_PUBLIC_PERSONAL_API_URL=http://personal-service:8080
+      - NEXT_PUBLIC_RECRUITING_API_URL=http://recruiting-service:8080
     ports:
       - "80:3000"
     depends_on:
