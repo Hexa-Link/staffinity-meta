@@ -44,7 +44,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5434/recruiting_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
-      - APP_PERSONAL_SERVICE_URL=http://personal-service:8081
+      - PERSONAL_SERVICE_URL=http://personal-service:8081
     depends_on:
       postgres:
         condition: service_healthy
