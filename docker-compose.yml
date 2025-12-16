@@ -72,6 +72,9 @@ services:
     depends_on:
       - personal-service
       - recruiting-service
+    extra_hosts:
+      - "staffinity.hexalink.app:host-gateway"
+      - "hexalink.app:host-gateway"
     networks:
       - hexalink-net
     restart: always
