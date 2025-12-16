@@ -26,13 +26,14 @@ services:
     image: ghcr.io/hexa-link/staffinity-personal-service:latest
     container_name: hexalink-personal
     environment:
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5434;Database=personal_db;Username=postgres;Password=${POSTGRES_PASSWORD};
+      # Internal connection to postgres is on port 5432
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=personal_db;Username=postgres;Password=${POSTGRES_PASSWORD};
       - ASPNETCORE_ENVIRONMENT=Production
     depends_on:
       postgres:
         condition: service_healthy
-    ports:
-      - "8081:8080"
+    expose:
+      - "8080" # Expose to internal network only, Nginx will proxy to this
     networks:
       - hexalink-net
     restart: always
@@ -41,36 +42,67 @@ services:
     image: ghcr.io/hexa-link/staffinity-recruiting-service:latest
     container_name: hexalink-recruiting
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5434/recruiting_db
+      # Internal connection to postgres is on port 5432
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/recruiting_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      # Internal connection to personal-service is on port 8080
       - PERSONAL_SERVICE_URL=http://personal-service:8080
     depends_on:
       postgres:
         condition: service_healthy
       personal-service:
-        condition: service_started # No healthcheck on personal-service yet
-    ports:
-      - "8082:8080"
+        condition: service_started
+    expose:
+      - "8080" # Expose to internal network only, Nginx will proxy to this
     networks:
       - hexalink-net
     restart: always
 
-  # --- Frontend ---
+  # --- Frontend (App) ---
   frontend:
     image: ghcr.io/hexa-link/staffinity-frontend:latest
     container_name: hexalink-frontend
     environment:
-      - NEXT_PUBLIC_PERSONAL_API_URL=http://personal-service:8081
-      - NEXT_PUBLIC_RECRUITING_API_URL=http://recruiting-service:8082
-    ports:
-      - "80:3000"
+      # Public APIs are now accessed via the domain/proxy
+      - NEXT_PUBLIC_PERSONAL_API_URL=https://staffinity.hexalink.app/api/personal
+      - NEXT_PUBLIC_RECRUITING_API_URL=https://staffinity.hexalink.app/api/recruiting
+    expose:
+      - "3000" # Expose to internal network only
     depends_on:
       - personal-service
       - recruiting-service
     networks:
       - hexalink-net
     restart: always
+
+  # --- Proxy & SSL ---
+  nginx:
+    image: nginx:1.24-alpine
+    container_name: hexalink-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - frontend
+      - personal-service
+      - recruiting-service
+    networks:
+      - hexalink-net
+    restart: always
+    command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
+
+  certbot:
+    image: certbot/certbot
+    container_name: hexalink-certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
 networks:
   hexalink-net:
